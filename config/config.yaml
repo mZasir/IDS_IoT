@@ -1,0 +1,9 @@
+mqtt:
+  broker: "test.mosquitto.org" # Adresse du broker
+  port: 1883 # Port MQTT 
+  topic: "iot/security" # Topic où l'on écoutera les messages
+
+logging:
+  log_file: "logs/ids.log" #Fichier où seront stockés les logs
+  log_level: "INFO" # Niveau de log
+
