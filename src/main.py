@@ -1,7 +1,15 @@
 import paho.mqtt.client as mqtt
+from collections import defaultdict
 from scapy.all import sniff, IP, TCP, UDP 
+import time
 import logging
 import yaml
+
+# Dictionnaiure pour suivre les adresses IP et les timestamps des paquets reçus
+ip_count = defaultdict(list)
+
+# Seuil de paquets par seconde pour identifier une attaque DDoS
+DDOS_THRESHOLD = 100 # nombre de paquets
 
 # Charger la config
 with open("config/config.yaml", "r") as file:
@@ -33,6 +41,23 @@ def packet_callback(packet):
         logging.warning(alert)
 
     logging.info(f"Paquet capturé: {src_ip} -> {dst_ip} ({proto})")
+
+
+def detect_ddos(packet):
+    src_ip = packet[IP].src
+    ip_count[src_ip].append(time.time())
+
+    valid_timestamps = []
+
+    for timestamp in ip_count[src_ip]:
+        if timestamp > time.time() - 1: # Si le timestamp 
+            valid_timestamps.append(timestamp)
+
+    ip_count[src_ip] = valid_timestamps
+
+    if len(ip_count[src_ip]) > DDOS_THRESHOLD:
+        return True
+    return False
 
 # Lancer la capture réseau
 def start_sniffing():
